@@ -1,19 +1,32 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-require "yaml"
+config_paths = ["", "config/", "tmp/"].map { |dir| dir + "föremål.yml" }
 
-def subset_to_s(subset)
-  subset.map { |x,y| "#{x}=#{y}" }.join(",")
-end
+config_file = config_paths.find { |_| File.exists? _ }
 
-subsets = YAML.load(open "tmp/föremål.yml")
+if config_file
+  require "yaml"
 
-if subset = subsets[ARGV[0].to_i || 0]
-  string_to_execute = "foreman start -m #{subset_to_s(subset)}"
-  puts "running #{string_to_execute}..."
-  exec string_to_execute
+  config = YAML.load open config_file
+
+  def subset_to_s(subset)
+    subset.map { |x,y| "#{x}=#{y}" }.join(",")
+  end
+
+  subset_index = ARGV[0] ? ARGV[0].to_i : config["default_subset"]
+  subset = config["subsets"][subset_index]
+
+  if subset
+    string_to_execute = "foreman start -m #{subset_to_s(subset)}"
+    puts "running `#{string_to_execute}`..."
+    exec string_to_execute
+  else
+    puts "available subsets:"
+    config["subsets"].each_with_index { |s, i| puts "  #{i}:  #{subset_to_s(s)}" }
+    exit 1
+  end
 else
-  puts "available subsets:"
-  subsets.each_with_index { |s, i| puts "  #{i}:  #{subset_to_s(s)}" }
+  puts "configuration file not found (#{config_paths.join(", ")})"
+  exit 1
 end
