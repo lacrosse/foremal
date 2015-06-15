@@ -8,7 +8,7 @@ config_file = config_paths.find { |_| File.exists? _ }
 if config_file
   require "yaml"
 
-  config = YAML.load open config_file
+  config = YAML.load_file config_file
 
   def subset_to_s(subset)
     subset.map { |x,y| "#{x}=#{y}" }.join(",")
