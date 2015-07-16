@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-config_paths = ["", "config/", "tmp/"].map { |dir| dir + "föremål.yml" }
+config_paths = %w{. config tmp}.map { |dir| dir + "/föremål.yml" }
 
-config_file = config_paths.find { |_| File.exists? _ }
+config_file = config_paths.find(&File.method(:exists?))
 
 if config_file
   require "yaml"
@@ -19,11 +19,16 @@ if config_file
 
   if subset
     string_to_execute = "foreman start -m #{subset_to_s(subset)}"
+
     puts "running `#{string_to_execute}`..."
     exec string_to_execute
   else
+    available_subsets = config["subsets"].map.each_with_index do |s, i|
+      " #{config["default_subset"] == i ? "*" : " "}#{i}  #{subset_to_s(s)}"
+    end
+
     puts "available subsets:"
-    config["subsets"].each_with_index { |s, i| puts "  #{i}:  #{subset_to_s(s)}" }
+    puts available_subsets
     exit 1
   end
 else
