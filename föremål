@@ -11,14 +11,14 @@ if config_file
   config = YAML.load_file config_file
 
   def subset_to_s(subset)
-    subset.map { |x,y| "#{x}=#{y}" }.join(",")
+    "foreman start -m #{subset.map { |x,y| "#{x}=#{y}" }.join(",")}"
   end
 
   subset_index = ARGV[0] ? ARGV[0].to_i : config["default_subset"]
   subset = config["subsets"][subset_index]
 
   if subset
-    string_to_execute = "foreman start -m #{subset_to_s(subset)}"
+    string_to_execute = subset_to_s(subset)
 
     puts "running `#{string_to_execute}`..."
     exec string_to_execute
